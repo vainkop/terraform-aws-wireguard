@@ -1,6 +1,19 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2021-03-11
+
+### Added
+- Update examples
+- Update Readme
+- Fix tf code
+- Refactor tf variables
+- Fix iptables rules
+- Upgrade Ubuntu 16.04 > 20.04
+- Upgrade aws cli v1 > v2
+- Install additional packages on the server for debugging & maintenance
+- Support for TF v0.13
+
 ## [1.0.0] - 2019-10-13
 Note that this release contains breaking changes. Hence the major version bump.
 

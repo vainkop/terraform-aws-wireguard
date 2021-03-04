@@ -1,18 +1,35 @@
+provider aws {
+  region = "us-east-1" # change to your region
+}
+
 module "wireguard" {
-  source                        = "git@github.com:jmhale/terraform-wireguard.git"
-  ssh_key_id                    = "ssh-key-id-0987654"
+  source                        = "vainkop/wireguard/aws"
+  version                       = "1.0.1"
+  ssh_key_id                    = "ssh-key-0987654"
   vpc_id                        = "vpc-01234567"
   additional_security_group_ids = [aws_security_group.wireguard_ssh_check.id] # for ssh health checks, see below
   subnet_ids                    = ["subnet-76543210"]                         # You'll want a NAT gateway on this, but we don't document that.
   target_group_arns             = [aws_lb_target_group.wireguard.arn]
-  asg_min_size                  = 1                # a sensible minimum, which is also the default
-  asg_desired_capacity          = 2                # we want two servers running most of the time
-  asg_max_size                  = 5                # this cleanly permits us to allow rolling updates, growing and shrinking
-  wg_server_net                 = "192.168.2.1/24" # client IPs MUST exist in this net
-  wg_client_public_keys = [
-    { "192.168.2.2/32" = "QFX/DXxUv56mleCJbfYyhN/KnLCrgp7Fq2fyVOk/FWU=" }, # make sure these are correct
-    { "192.168.2.3/32" = "+IEmKgaapYosHeehKW8MCcU65Tf5e4aXIvXGdcUlI0Q=" }, # wireguard is sensitive
-    { "192.168.2.4/32" = "WO0tKrpUWlqbl/xWv6riJIXipiMfAEKi51qvHFUU30E=" }, # to bad configuration
+  asg_min_size                  = 1                                           # a sensible minimum, which is also the default
+  asg_desired_capacity          = 2                                           # we want two servers running most of the time
+  asg_max_size                  = 5                                           # this cleanly permits us to allow rolling updates, growing and shrinking
+  wg_server_net                 = "10.8.0.1/24"                               # client IPs MUST exist in this net
+  wg_clients = [
+    {
+      name = "client1"
+      public_key = "QHdbO9TThkXfCJLZWLaSCMFcIylqiyJdm02CYHLWFmI="
+      client_ip = "10.8.0.2/32"
+    },
+    {
+      name = "client1"
+      public_key = "4BGwG/o0qCiPUstTsDY5ikVzkGZyfEeEuPY6380u0Eg="
+      client_ip = "10.8.0.3/32"
+    },
+    {
+      name = "client3"
+      public_key = "UKltTV3qmsrmp7DssvP+qAd2m1nBpVXRrsL3AxqsJ2Q="
+      client_ip = "10.8.0.4/32"
+    },
   ]
 }
 

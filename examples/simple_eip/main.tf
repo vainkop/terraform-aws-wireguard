@@ -6,15 +6,31 @@ resource "aws_eip" "wireguard" {
 }
 
 module "wireguard" {
-  source        = "git@github.com:jmhale/terraform-wireguard.git"
-  ssh_key_id    = "ssh-key-id-0987654"
-  vpc_id        = "vpc-01234567"
-  subnet_ids    = ["subnet-01234567"]
-  eip_id        = "${aws_eip.wireguard.id}"
-  wg_server_net = "192.168.2.1/24" # client IPs MUST exist in this net
-  wg_client_public_keys = [
-    { "192.168.2.2/32" = "QFX/DXxUv56mleCJbfYyhN/KnLCrgp7Fq2fyVOk/FWU=" }, # make sure these are correct
-    { "192.168.2.3/32" = "+IEmKgaapYosHeehKW8MCcU65Tf5e4aXIvXGdcUlI0Q=" }, # wireguard is sensitive
-    { "192.168.2.4/32" = "WO0tKrpUWlqbl/xWv6riJIXipiMfAEKi51qvHFUU30E=" }, # to bad configuration
+  region        = "us-east-1"
+  source        = "vainkop/wireguard/aws"
+  version       = "1.0.1"
+  ssh_key_id    = "ssh-key-01"
+  instance_type = "t2.medium"
+  vpc_id        = "vpc-0e604d4a2e308d05e"
+  subnet_ids    = ["subnet-0786aef3b08de4086"]
+  use_eip       = true
+  eip_id        = aws_eip.wireguard.id
+  wg_server_net = "10.8.0.1/24"
+  wg_clients = [
+    {
+      name = "client1"
+      public_key = "QHdbO9TThkXfCJLZWLaSCMFcIylqiyJdm02CYHLWFmI="
+      client_ip = "10.8.0.2/32"
+    },
+    {
+      name = "client1"
+      public_key = "4BGwG/o0qCiPUstTsDY5ikVzkGZyfEeEuPY6380u0Eg="
+      client_ip = "10.8.0.3/32"
+    },
+    {
+      name = "client3"
+      public_key = "UKltTV3qmsrmp7DssvP+qAd2m1nBpVXRrsL3AxqsJ2Q="
+      client_ip = "10.8.0.4/32"
+    },
   ]
 }

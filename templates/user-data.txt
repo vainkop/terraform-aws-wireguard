@@ -1,21 +1,50 @@
 #!/bin/bash -v
 apt-get update -y
 DEBIAN_FRONTEND=noninteractive apt-get upgrade -y -o Dpkg::Options::="--force-confnew"
-apt-get install -y wireguard-dkms wireguard-tools awscli
+apt-get install -y \
+  apt-transport-https \
+  ca-certificates \
+  build-essential \
+  software-properties-common \
+  unzip \
+  curl \
+  net-tools \
+  wireguard-dkms \
+  wireguard-tools && \
+  rm -rf /var/lib/apt/lists/*
+
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+unzip awscliv2.zip && \
+rm -f awscliv2.zip && \
+./aws/install
 
 cat > /etc/wireguard/wg0.conf <<- EOF
 [Interface]
 Address = ${wg_server_net}
 PrivateKey = ${wg_server_private_key}
 ListenPort = ${wg_server_port}
-PostUp   = iptables -A FORWARD -i %i -j ACCEPT; iptables -A FORWARD -o %i -j ACCEPT; iptables -t nat -A POSTROUTING -o ${wg_server_interface} -j MASQUERADE
-PostDown = iptables -D FORWARD -i %i -j ACCEPT; iptables -D FORWARD -o %i -j ACCEPT; iptables -t nat -D POSTROUTING -o ${wg_server_interface} -j MASQUERADE
+PostUp = sysctl -w -q net.ipv4.ip_forward=1
+PostUp = sysctl -w -q net.ipv6.conf.all.forwarding=1
+PostUp = iptables -P FORWARD DROP
+PostUp = ip6tables -P FORWARD DROP
+PostUp = iptables -A FORWARD -i wg0 -j ACCEPT
+PostUp = ip6tables -A FORWARD -i wg0 -j ACCEPT
+PostUp = iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostUp = ip6tables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+PostDown = sysctl -w -q net.ipv4.ip_forward=0
+PostDown = sysctl -w -q net.ipv6.conf.all.forwarding=0
+PostDown = iptables -P FORWARD ACCEPT
+PostDown = ip6tables -P FORWARD ACCEPT
+PostDown = iptables -D FORWARD -i wg0 -j ACCEPT
+PostDown = ip6tables -D FORWARD -i wg0 -j ACCEPT
+PostDown = iptables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
+PostDown = ip6tables -t nat -D POSTROUTING -o eth0 -j MASQUERADE
 
 ${peers}
 EOF
 
 # we go with the eip if it is provided
-if [ "${eip_id}" != "disabled" ]; then
+if [ "${use_eip}" != "disabled" ]; then
   export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
   export REGION=$(curl -fsq http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/[a-z]$//')
   aws --region $${REGION} ec2 associate-address --allocation-id ${eip_id} --instance-id $${INSTANCE_ID}
@@ -23,7 +52,6 @@ fi
 
 chown -R root:root /etc/wireguard/
 chmod -R og-rwx /etc/wireguard/*
-sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf
 sysctl -p
 ufw allow ssh
 ufw allow ${wg_server_port}/udp

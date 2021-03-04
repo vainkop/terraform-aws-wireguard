@@ -1,3 +1,7 @@
+variable "region" {
+  type = string
+}
+
 variable "ssh_key_id" {
   description = "A SSH public key ID to add to the VPN instance."
 }
@@ -31,13 +35,13 @@ variable "subnet_ids" {
   description = "A list of subnets for the Autoscaling Group to use for launching instances. May be a single subnet, but it must be an element in a list."
 }
 
-variable "wg_client_public_keys" {
-  # type        = map(string)
-  description = "List of maps of client IPs and public keys. See Usage in README for details."
+variable "wg_clients" {
+  type        = list(object({ name=string, public_key=string, client_ip=string }))
+  description = "List of client objects with IP and public key. See Usage in README for details."
 }
 
 variable "wg_server_net" {
-  default     = "192.168.2.1/24"
+  default     = "10.8.0.1/24"
   description = "IP range for vpn server - make sure your Client ips are in this range but not the specific ip i.e. not .1"
 }
 
@@ -51,9 +55,15 @@ variable "wg_persistent_keepalive" {
   description = "Persistent Keepalive - useful for helping connection stability over NATs."
 }
 
+variable "use_eip" {
+  type        = bool
+  default     = false
+  description = "Whether to enable Elastic IP switching code in user-data on wg server startup. If true, eip_id must also be set to the ID of the Elastic IP."
+}
+
 variable "eip_id" {
-  default     = "disabled"
-  description = "If we detect the default 'disabled' we avoid the EIP switching code in user-data on wg server startup, if an EIP ID is provided the instance will attempt to switch EIP."
+  type        = string
+  description = "ID of the Elastic IP to use, when use_eip is enabled."
 }
 
 variable "additional_security_group_ids" {
@@ -80,7 +90,7 @@ variable "wg_server_private_key_param" {
 
 variable "ami_id" {
   default     = null # we check for this and use a data provider since we can't use it here
-  description = "The AWS AMI to use for the WG server, defaults to the latest Ubuntu 16.04 AMI if not specified."
+  description = "The AWS AMI to use for the WG server, defaults to the latest Ubuntu 20.04 AMI if not specified."
 }
 
 variable "wg_server_interface" {
