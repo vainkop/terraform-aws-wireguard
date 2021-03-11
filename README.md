@@ -1,9 +1,11 @@
 # terraform-aws-wireguard
 
-A Terraform module to deploy a WireGuard VPN server on AWS. It can also be used to run one or more servers behind a loadbalancer, for redundancy.
+A Terraform module to deploy a WireGuard VPN server on AWS. It can also be used to run one or more servers behind a loadbalancer, for redundancy.  
+
+The module is "Terragrunt ready" & supports multi region deployment & values in yaml format. Please see example here: [example/](example/)  
 
 ## Prerequisites
-Before using this module, you'll need to generate a key pair for your server and client, and store the server's private key and client's public key in AWS SSM, which cloud-init will source and add to WireGuard's configuration.
+Before using this module, you'll need to generate a key pair for your server and client, which cloud-init will source and add to WireGuard's configuration.
 
 - Install the WireGuard tools for your OS: https://www.wireguard.com/install/
 - Generate a key pair for each client
@@ -34,24 +36,5 @@ Before using this module, you'll need to generate a key pair for your server and
 |`wg_server_port`|`integer`|Optional - defaults to `51820`|Port to run wireguard service on, wireguard standard is 51820.|
 |`wg_persistent_keepalive`|`integer`|Optional - defaults to `25`|Regularity of Keepalives, useful for NAT stability.|
 |`wg_server_private_key_param`|`string`|Optional - defaults to `/wireguard/wg-server-private-key`|The Parameter Store key to use for the VPN server Private Key.|
-|`ami_id`|`string`|Optional - defaults to the newest Ubuntu 16.04 AMI|AMI to use for the VPN server.|
+|`ami_id`|`string`|Optional - defaults to the newest Ubuntu 20.04 AMI|AMI to use for the VPN server.|
 |`wg_server_interface`|`string`|Optional - defaults to eth0|Server interface to route traffic to for installations forwarding traffic to private networks.|
-
-## Examples
-
-Please see the following examples to understand usage with the relevant options.
-
-### Simple Elastic IP/public subnet usage
-
-See [examples/simple_eip/main.tf](examples/simple_eip/main.tf) file.
-
-### Complex Elastic Load Balancer/private subnet usage
-
-See [examples/complex_elb/main.tf](examples/complex_elb/main.tf) file.
-
-## Outputs
-| Output Name | Description |
-|---------------|-------------|
-|`vpn_asg_name`|The name of the wireguard Auto Scaling Group|
-|`vpn_sg_admin_id`|ID of the internal Security Group to associate with other resources needing to be accessed on VPN.|
-|`vpn_sg_external_id`|ID of the external Security Group to associate with the VPN.|

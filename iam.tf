@@ -22,14 +22,14 @@ data "aws_iam_policy_document" "wireguard_policy_doc" {
 }
 
 resource "aws_iam_policy" "wireguard_policy" {
-  name        = "tf-wireguard-${var.env}"
+  name        = "tf-wireguard-${var.env}-${var.region}"
   description = "Terraform Managed. Allows Wireguard instance to attach EIP."
   policy      = data.aws_iam_policy_document.wireguard_policy_doc.json
   count       = (var.use_eip ? 1 : 0) # only used for EIP mode
 }
 
 resource "aws_iam_role" "wireguard_role" {
-  name               = "tf-wireguard-${var.env}"
+  name               = "tf-wireguard-${var.env}-${var.region}"
   description        = "Terraform Managed. Role to allow Wireguard instance to attach EIP."
   path               = "/"
   assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
@@ -43,7 +43,7 @@ resource "aws_iam_role_policy_attachment" "wireguard_roleattach" {
 }
 
 resource "aws_iam_instance_profile" "wireguard_profile" {
-  name  = "tf-wireguard-${var.env}"
+  name  = "tf-wireguard-${var.env}-${var.region}"
   role  = aws_iam_role.wireguard_role[0].name
   count = (var.use_eip ? 1 : 0) # only used for EIP mode
 }

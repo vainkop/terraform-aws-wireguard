@@ -1,0 +1,17 @@
+region: us-east-1
+ssh_key_id: YOUR_SSH_KEY_HERE
+instance_type: t2.medium
+vpc_id: YOUR_VPC_ID_HERE
+subnet_ids:
+  - YOUR_SUBNET_ID_HERE
+use_eip: true
+prometheus_server_ip: 0.0.0.0/0
+wg_server_net: 10.8.0.1/24
+wg_server_private_key: YOUR_SERVER_PRIVATE_KEY_HERE
+wg_clients:
+  - friendly_name: machine-1
+    public_key: MACHINE_1_PUBLIC_KEY_HERE
+    client_ip: 10.8.0.2/32
+  - friendly_name: machine-1
+    public_key: MACHINE_1_PUBLIC_KEY_HERE
+    client_ip: 10.8.0.3/32

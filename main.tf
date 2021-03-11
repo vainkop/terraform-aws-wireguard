@@ -1,14 +1,15 @@
-data "template_file" "user_data" {
-  template = file("${path.module}/templates/user-data.txt")
+terraform {
+  backend "s3" {}
+}
 
-  vars = {
-    wg_server_private_key = data.aws_ssm_parameter.wg_server_private_key.value
-    wg_server_net         = var.wg_server_net
-    wg_server_port        = var.wg_server_port
-    peers                 = join("\n", data.template_file.wg_client_data_json.*.rendered)
-    use_eip               = var.use_eip ? "enabled" : "disabled"
-    eip_id                = var.eip_id
-    wg_server_interface   = var.wg_server_interface
+provider "aws" {
+  version = "= 3.32.0"
+  region  = var.region
+}
+
+data "aws_eip" "wireguard" {
+  tags = {
+    Name = "wireguard"
   }
 }
 
@@ -17,7 +18,7 @@ data "template_file" "wg_client_data_json" {
   count    = length(var.wg_clients)
 
   vars = {
-    client_name          = var.wg_clients[count.index].name
+    friendly_name        = var.wg_clients[count.index].friendly_name
     client_pub_key       = var.wg_clients[count.index].public_key
     client_ip            = var.wg_clients[count.index].client_ip
     persistent_keepalive = var.wg_persistent_keepalive
@@ -37,24 +38,22 @@ data "aws_ami" "ubuntu" {
   owners = ["099720109477"] # Canonical
 }
 
-# turn the sg into a sorted list of string
-locals {
-  sg_wireguard_external = sort([aws_security_group.sg_wireguard_external.id])
-}
-
-# clean up and concat the above wireguard default sg with the additional_security_group_ids
-locals {
-  security_groups_ids = compact(concat(var.additional_security_group_ids, local.sg_wireguard_external))
-}
-
 resource "aws_launch_configuration" "wireguard_launch_config" {
-  name_prefix                 = "wireguard-${var.env}-"
-  image_id                    = var.ami_id == null ? data.aws_ami.ubuntu.id : var.ami_id
-  instance_type               = var.instance_type
-  key_name                    = var.ssh_key_id
-  iam_instance_profile        = (var.use_eip ? aws_iam_instance_profile.wireguard_profile[0].name : null)
-  user_data                   = data.template_file.user_data.rendered
-  security_groups             = local.security_groups_ids
+  name_prefix          = "wireguard-${var.env}-${var.region}-"
+  image_id             = var.ami_id == null ? data.aws_ami.ubuntu.id : var.ami_id
+  instance_type        = var.instance_type
+  key_name             = var.ssh_key_id
+  iam_instance_profile = (var.use_eip ? aws_iam_instance_profile.wireguard_profile[0].name : null)
+  user_data = templatefile("${path.module}/templates/user-data.txt", {
+    wg_server_private_key = var.wg_server_private_key,
+    wg_server_net         = var.wg_server_net,
+    wg_server_port        = var.wg_server_port,
+    peers                 = join("\n", data.template_file.wg_client_data_json.*.rendered),
+    use_eip               = var.use_eip ? "enabled" : "disabled",
+    eip_id                = data.aws_eip.wireguard.id,
+    wg_server_interface   = var.wg_server_interface
+  })
+  security_groups             = [aws_security_group.sg_wireguard.id]
   associate_public_ip_address = var.use_eip
 
   lifecycle {

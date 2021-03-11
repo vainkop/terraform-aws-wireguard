@@ -36,7 +36,7 @@ variable "subnet_ids" {
 }
 
 variable "wg_clients" {
-  type        = list(object({ name=string, public_key=string, client_ip=string }))
+  type        = list(object({ friendly_name = string, public_key = string, client_ip = string }))
   description = "List of client objects with IP and public key. See Usage in README for details."
 }
 
@@ -61,17 +61,6 @@ variable "use_eip" {
   description = "Whether to enable Elastic IP switching code in user-data on wg server startup. If true, eip_id must also be set to the ID of the Elastic IP."
 }
 
-variable "eip_id" {
-  type        = string
-  description = "ID of the Elastic IP to use, when use_eip is enabled."
-}
-
-variable "additional_security_group_ids" {
-  type        = list(string)
-  default     = [""]
-  description = "Additional security groups if provided, default empty."
-}
-
 variable "target_group_arns" {
   type        = list(string)
   default     = null
@@ -83,9 +72,10 @@ variable "env" {
   description = "The name of environment for WireGuard. Used to differentiate multiple deployments."
 }
 
-variable "wg_server_private_key_param" {
-  default     = "/wireguard/wg-server-private-key"
-  description = "The SSM parameter containing the WG server private key."
+variable "wg_server_private_key" {
+  type        = string
+  default     = null
+  description = "WG server private key."
 }
 
 variable "ami_id" {
@@ -96,4 +86,10 @@ variable "ami_id" {
 variable "wg_server_interface" {
   default     = "eth0"
   description = "The default interface to forward network traffic to."
+}
+
+variable "prometheus_server_ip" {
+  type        = string
+  default     = null
+  description = "Prometheus server IP."
 }

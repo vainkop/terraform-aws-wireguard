@@ -1,6 +1,14 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2021-03-12
+
+### Added
+- docker-ce
+- docker-compose
+- prometheus-wireguard-exporter
+- friendly_name support
+
 ## [1.1.0] - 2021-03-11
 
 ### Added
