@@ -12,8 +12,6 @@ Before using this module, you'll need to generate a key pair for your server and
   - `wg genkey | tee client1-privatekey | wg pubkey > client1-publickey`
 - Generate a key pair for the server
   - `wg genkey | tee server-privatekey | wg pubkey > server-publickey`
-- Add the server private key to the AWS SSM parameter: `/wireguard/wg-server-private-key`
-  - `aws ssm put-parameter --name /wireguard/wg-server-private-key --type SecureString --value $ServerPrivateKeyValue`
 - Add each client's public key, along with the next available IP address to the wg_clients list. See Usage for details.
 
 ## Variables
@@ -25,6 +23,8 @@ Before using this module, you'll need to generate a key pair for your server and
 |`env`|`string`|Optional - defaults to `prod`|The name of environment for WireGuard. Used to differentiate multiple deployments.|
 |`use_eip`|`bool`|Optional|Whether to attach an [Elastic IP](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html) address to the VPN server. Useful for avoiding changing IPs.|
 |`eip_id`|`string`|Optional|When `use_eip` is enabled, specify the ID of the Elastic IP to which the VPN server will attach.|
+|`use_ssm`|`bool`|Optional|Use SSM Parameter Store for the VPN server Private Key.|
+|`wg_server_private_key`|`string`|Yes - defaults to static value in `/etc/wireguard/wg0.conf`| Static value or The Parameter Store key to use for the VPN server Private Key.|
 |`target_group_arns`|`string`|Optional|The Loadbalancer Target Group to which the vpn server ASG will attach.|
 |`additional_security_group_ids`|`list`|Optional|Used to allow added access to reach the WG servers or allow loadbalancer health checks.|
 |`asg_min_size`|`integer`|Optional - default to `1`|Number of VPN servers to permit minimum, only makes sense in loadbalanced scenario.|
@@ -35,6 +35,8 @@ Before using this module, you'll need to generate a key pair for your server and
 |`wg_clients`|`list`|Yes|List of client objects with IP and public key. See Usage for details. See Examples for formatting.|
 |`wg_server_port`|`integer`|Optional - defaults to `51820`|Port to run wireguard service on, wireguard standard is 51820.|
 |`wg_persistent_keepalive`|`integer`|Optional - defaults to `25`|Regularity of Keepalives, useful for NAT stability.|
-|`wg_server_private_key_param`|`string`|Optional - defaults to `/wireguard/wg-server-private-key`|The Parameter Store key to use for the VPN server Private Key.|
 |`ami_id`|`string`|Optional - defaults to the newest Ubuntu 20.04 AMI|AMI to use for the VPN server.|
 |`wg_server_interface`|`string`|Optional - defaults to eth0|Server interface to route traffic to for installations forwarding traffic to private networks.|
+|`use_route53`|`bool`|Optional|Create Route53 record for Wireguard server.|
+|`route53_hosted_zone_id`|`string`|Optional - if use_route53 is not used.|Route53 Hosted zone ID for Wireguard server Route53 record.|
+|`route53_record_name`|`string`|Optional - if use_route53 is not used.|Route53 Record Name for Wireguard server.|

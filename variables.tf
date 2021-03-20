@@ -61,6 +61,12 @@ variable "use_eip" {
   description = "Whether to enable Elastic IP switching code in user-data on wg server startup. If true, eip_id must also be set to the ID of the Elastic IP."
 }
 
+variable "use_ssm" {
+  type        = bool
+  default     = false
+  description = "Whether to use SSM to store Wireguard Server private key."
+}
+
 variable "target_group_arns" {
   type        = list(string)
   default     = null
@@ -92,4 +98,28 @@ variable "prometheus_server_ip" {
   type        = string
   default     = null
   description = "Prometheus server IP."
+}
+
+variable "use_route53" {
+  type        = bool
+  default     = false
+  description = "Whether to use SSM to store Wireguard Server private key."
+}
+
+variable "route53_hosted_zone_id" {
+  type        = string
+  default     = null
+  description = "Route53 Hosted zone ID."
+}
+
+variable "route53_record_name" {
+  type        = string
+  default     = null
+  description = "Route53 Record name."
+}
+
+variable "route53_geo" {
+  type        = any
+  default     = null
+  description = "Route53 Geolocation config."
 }

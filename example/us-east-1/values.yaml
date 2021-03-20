@@ -5,6 +5,13 @@ vpc_id: YOUR_VPC_ID_HERE
 subnet_ids:
   - YOUR_SUBNET_ID_HERE
 use_eip: true
+use_ssm: true
+use_route53: true
+route53_hosted_zone_id: Z06401293ABC321ODE001
+route53_record_name: vpn.example.com
+route53_geo:
+  policy:
+  - continent: NA
 prometheus_server_ip: 0.0.0.0/0
 wg_server_net: 10.8.0.1/24
 wg_server_private_key: YOUR_SERVER_PRIVATE_KEY_HERE

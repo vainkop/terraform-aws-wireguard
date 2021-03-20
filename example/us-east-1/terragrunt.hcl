@@ -3,7 +3,7 @@ include {
 }
 
 terraform {
-  source = "github.com/vainkop/terraform-aws-wireguard?ref=v1.2.0"
+  source = "github.com/vainkop/terraform-aws-wireguard?ref=v1.3.0"
 }
 
 locals { common_vars = yamldecode(file("values.yaml")) }
