@@ -39,4 +39,10 @@ Before using this module, you'll need to generate a key pair for your server and
 |`wg_server_interface`|`string`|Optional - defaults to eth0|Server interface to route traffic to for installations forwarding traffic to private networks.|
 |`use_route53`|`bool`|Optional|Create Route53 record for Wireguard server.|
 |`route53_hosted_zone_id`|`string`|Optional - if use_route53 is not used.|Route53 Hosted zone ID for Wireguard server Route53 record.|
-|`route53_record_name`|`string`|Optional - if use_route53 is not used.|Route53 Record Name for Wireguard server.|
+|`route53_record_name`|`string`|Optional - if use_route53 is not used.|Route53 Record Name for Wireguard server.|  
+  
+If the `wg_server_private_key` contains certain characters like slashes & etc then it needs additional pre-processing before entering it into `values.yaml`. Example:
+```
+export ESCAPED_WG_SERVER_PRIVATE_KEY=$(printf '%s\n' "$WG_SERVER_PRIVATE_KEY" | sed -e 's/[\/&]/\\&/g')
+sed -i "s/WG_SERVER_PRIVATE_KEY/$ESCAPED_WG_SERVER_PRIVATE_KEY/g" values.yaml
+```
