@@ -1,12 +1,3 @@
-terraform {
-  backend "s3" {}
-}
-
-provider "aws" {
-  version = "= 3.32.0"
-  region  = var.region
-}
-
 resource "aws_eip" "wireguard" {
   vpc = true
   tags = {
@@ -24,7 +15,7 @@ resource "aws_route53_record" "wireguard" {
   ttl             = "60"
   records         = [aws_eip.wireguard.public_ip]
 
-  dynamic geolocation_routing_policy {
+  dynamic "geolocation_routing_policy" {
     for_each = try(length(var.route53_geo.policy) > 0 ? var.route53_geo.policy : tomap(false), {})
 
     content {
