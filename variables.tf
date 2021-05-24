@@ -94,10 +94,16 @@ variable "wg_server_interface" {
   description = "The default interface to forward network traffic to."
 }
 
+variable "use_prometheus" {
+  type        = bool
+  default     = false
+  description = "Whether to setup and use prometheus node metrics export or not."
+}
+
 variable "prometheus_server_ip" {
   type        = string
-  default     = null
-  description = "Prometheus server IP."
+  default     = "0.0.0.0/0"
+  description = "Prometheus server CIDR block."
 }
 
 variable "use_route53" {

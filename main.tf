@@ -66,6 +66,7 @@ resource "aws_launch_configuration" "wireguard_launch_config" {
     use_eip                            = var.use_eip ? "enabled" : "disabled",
     eip_id                             = var.use_eip ? aws_eip.wireguard[0].id : "",
     use_ssm                            = var.use_ssm ? "true" : "false",
+    use_prometheus                     = var.use_prometheus ? "true" : "false",
     wg_server_interface                = var.wg_server_interface
   })
   security_groups             = [aws_security_group.sg_wireguard.id]
