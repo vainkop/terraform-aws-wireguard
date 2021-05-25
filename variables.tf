@@ -58,7 +58,7 @@ variable "wg_persistent_keepalive" {
 variable "use_eip" {
   type        = bool
   default     = false
-  description = "Whether to enable Elastic IP switching code in user-data on wg server startup. If true, eip_id must also be set to the ID of the Elastic IP."
+  description = "Create and use an Elastic IP in user-data on wg server startup."
 }
 
 variable "use_ssm" {

@@ -1,8 +1,8 @@
 # terraform-aws-wireguard
 
-A Terraform module to deploy a WireGuard VPN server on AWS. It can also be used to run one or more servers behind a loadbalancer, for redundancy.  
+A Terraform module to deploy a WireGuard VPN server on AWS. It can also be used to run one or more servers behind a loadbalancer, for redundancy.
 
-The module is "Terragrunt ready" & supports multi region deployment & values in yaml format. Please see example here: [example/](example/)  
+The module is "Terragrunt ready" & supports multi region deployment & values in yaml format. Please see example here: [example/](example/)
 
 ## Prerequisites
 Before using this module, you'll need to generate a key pair for your server and client, which cloud-init will source and add to WireGuard's configuration.
@@ -21,9 +21,8 @@ Before using this module, you'll need to generate a key pair for your server and
 |`ssh_key_id`|`string`|Yes|A SSH public key ID to add to the VPN instance.|
 |`vpc_id`|`string`|Yes|The VPC ID in which Terraform will launch the resources.|
 |`env`|`string`|Optional - defaults to `prod`|The name of environment for WireGuard. Used to differentiate multiple deployments.|
-|`use_eip`|`bool`|Optional|Whether to attach an [Elastic IP](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html) address to the VPN server. Useful for avoiding changing IPs.|
-|`eip_id`|`string`|Optional|When `use_eip` is enabled, specify the ID of the Elastic IP to which the VPN server will attach.|
-|`use_ssm`|`bool`|Optional|Use SSM Parameter Store for the VPN server Private Key.|
+|`use_eip`|`bool`|Optional - defaults to `false`|Whether to create and attach an [Elastic IP](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html) address to the VPN server. Useful for avoiding changing IPs.|
+|`use_ssm`|`bool`|Optional - defaults to `false`|Use SSM Parameter Store for the VPN server Private Key.|
 |`wg_server_private_key`|`string`|Yes - defaults to static value in `/etc/wireguard/wg0.conf`| Static value or The Parameter Store key to use for the VPN server Private Key.|
 |`target_group_arns`|`string`|Optional|The Loadbalancer Target Group to which the vpn server ASG will attach.|
 |`additional_security_group_ids`|`list`|Optional|Used to allow added access to reach the WG servers or allow loadbalancer health checks.|
@@ -37,10 +36,10 @@ Before using this module, you'll need to generate a key pair for your server and
 |`wg_persistent_keepalive`|`integer`|Optional - defaults to `25`|Regularity of Keepalives, useful for NAT stability.|
 |`ami_id`|`string`|Optional - defaults to the newest Ubuntu 20.04 AMI|AMI to use for the VPN server.|
 |`wg_server_interface`|`string`|Optional - defaults to eth0|Server interface to route traffic to for installations forwarding traffic to private networks.|
-|`use_route53`|`bool`|Optional|Create Route53 record for Wireguard server.|
-|`route53_hosted_zone_id`|`string`|Optional - if use_route53 is not used.|Route53 Hosted zone ID for Wireguard server Route53 record.|
-|`route53_record_name`|`string`|Optional - if use_route53 is not used.|Route53 Record Name for Wireguard server.|  
-  
+|`use_route53`|`bool`|Optional - default to `false`|Create Route53 record for Wireguard server (requires `use_eip` to be `true`).|
+|`route53_hosted_zone_id`|`string`|Optional - if `use_route53` is not used.|Route53 Hosted zone ID for Wireguard server Route53 record.|
+|`route53_record_name`|`string`|Optional - if `use_route53` is not used.|Route53 Record Name for Wireguard server.|
+
 If the `wg_server_private_key` contains certain characters like slashes & etc then it needs additional pre-processing before entering it into `values.yaml`. Example:
 ```
 export ESCAPED_WG_SERVER_PRIVATE_KEY=$(printf '%s\n' "$WG_SERVER_PRIVATE_KEY" | sed -e 's/[\/&]/\\&/g')
