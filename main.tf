@@ -1,4 +1,6 @@
 resource "aws_eip" "wireguard" {
+  count = var.use_eip ? 1 : 0
+
   vpc = true
   tags = {
     Name = "wireguard"
@@ -6,14 +8,14 @@ resource "aws_eip" "wireguard" {
 }
 
 resource "aws_route53_record" "wireguard" {
-  count           = var.use_route53 ? 1 : 0
+  count           = var.use_route53 && var.use_eip ? 1 : 0
   allow_overwrite = true
   set_identifier  = "wireguard-${var.region}"
   zone_id         = var.route53_hosted_zone_id
   name            = var.route53_record_name
   type            = "A"
   ttl             = "60"
-  records         = [aws_eip.wireguard.public_ip]
+  records         = [aws_eip.wireguard[0].public_ip]
 
   dynamic "geolocation_routing_policy" {
     for_each = try(length(var.route53_geo.policy) > 0 ? var.route53_geo.policy : tomap(false), {})
@@ -62,7 +64,7 @@ resource "aws_launch_configuration" "wireguard_launch_config" {
     wg_server_port                     = var.wg_server_port,
     peers                              = join("\n", data.template_file.wg_client_data_json.*.rendered),
     use_eip                            = var.use_eip ? "enabled" : "disabled",
-    eip_id                             = aws_eip.wireguard.id,
+    eip_id                             = var.use_eip ? aws_eip.wireguard[0].id : "",
     use_ssm                            = var.use_ssm ? "true" : "false",
     wg_server_interface                = var.wg_server_interface
   })
