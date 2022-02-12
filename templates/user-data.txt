@@ -74,14 +74,15 @@ do
   sleep 1
 done
 
-# Install prometheus_wireguard_exporter
-wget https://github.com/vainkop/terraform-aws-wireguard/releases/download/v1.3.0/prometheus_wireguard_exporter_v3.4.2.tar.gz && \
-tar -zxvf prometheus_wireguard_exporter_v3.4.2.tar.gz prometheus_wireguard_exporter && \
-rm -fv prometheus_wireguard_exporter_v3.4.2.tar.gz && \
-mv prometheus_wireguard_exporter /usr/local/bin/prometheus_wireguard_exporter && \
-chmod +x /usr/local/bin/prometheus_wireguard_exporter
+if [[ "${use_prometheus}" == "true" ]]; then
+  # Install prometheus_wireguard_exporter
+  wget https://github.com/vainkop/terraform-aws-wireguard/releases/download/v1.3.0/prometheus_wireguard_exporter_v3.4.2.tar.gz && \
+  tar -zxvf prometheus_wireguard_exporter_v3.4.2.tar.gz prometheus_wireguard_exporter && \
+  rm -fv prometheus_wireguard_exporter_v3.4.2.tar.gz && \
+  mv prometheus_wireguard_exporter /usr/local/bin/prometheus_wireguard_exporter && \
+  chmod +x /usr/local/bin/prometheus_wireguard_exporter
 
-cat <<EOF | tee /etc/systemd/system/prometheus_wireguard_exporter.service
+  cat <<EOF | tee /etc/systemd/system/prometheus_wireguard_exporter.service
 [Unit]
 Description=Prometheus WireGuard Exporter
 Wants=network-online.target
@@ -96,25 +97,26 @@ ExecStart=/usr/local/bin/prometheus_wireguard_exporter -a -n /etc/wireguard/wg0.
 [Install]
 WantedBy=multi-user.target
 EOF
-systemctl daemon-reload && \
-systemctl start prometheus_wireguard_exporter.service && \
-systemctl enable prometheus_wireguard_exporter.service
 
-until systemctl is-active --quiet prometheus_wireguard_exporter.service
-do
-  sleep 1
-done
+  systemctl daemon-reload && \
+  systemctl start prometheus_wireguard_exporter.service && \
+  systemctl enable prometheus_wireguard_exporter.service
 
-# Install node_exporter
-useradd -rs /bin/false node_exporter && \
-wget https://github.com/prometheus/node_exporter/releases/download/v1.1.2/node_exporter-1.1.2.linux-amd64.tar.gz && \
-tar -zxvf node_exporter-1.1.2.linux-amd64.tar.gz node_exporter-1.1.2.linux-amd64/node_exporter && \
-rm -fv node_exporter-1.1.2.linux-amd64.tar.gz && \
-mv node_exporter-1.1.2.linux-amd64/node_exporter /usr/local/bin/node_exporter && \
-chmod +x /usr/local/bin/node_exporter && \
-chown node_exporter:node_exporter /usr/local/bin/node_exporter
+  until systemctl is-active --quiet prometheus_wireguard_exporter.service
+  do
+    sleep 1
+  done
 
-cat <<EOF | tee /etc/systemd/system/node_exporter.service
+  # Install node_exporter
+  useradd -rs /bin/false node_exporter && \
+  wget https://github.com/prometheus/node_exporter/releases/download/v1.1.2/node_exporter-1.1.2.linux-amd64.tar.gz && \
+  tar -zxvf node_exporter-1.1.2.linux-amd64.tar.gz node_exporter-1.1.2.linux-amd64/node_exporter && \
+  rm -fv node_exporter-1.1.2.linux-amd64.tar.gz && \
+  mv node_exporter-1.1.2.linux-amd64/node_exporter /usr/local/bin/node_exporter && \
+  chmod +x /usr/local/bin/node_exporter && \
+  chown node_exporter:node_exporter /usr/local/bin/node_exporter
+
+  cat <<EOF | tee /etc/systemd/system/node_exporter.service
 [Unit]
 Description=Node Exporter
 Wants=network-online.target
@@ -130,17 +132,20 @@ ExecStart=/usr/local/bin/node_exporter --web.listen-address=":9100"
 WantedBy=multi-user.target
 EOF
 
-systemctl daemon-reload && \
-systemctl start node_exporter && \
-systemctl enable node_exporter
+  systemctl daemon-reload && \
+  systemctl start node_exporter && \
+  systemctl enable node_exporter
 
-until systemctl is-active --quiet node_exporter.service
-do
-  sleep 1
-done
+  until systemctl is-active --quiet node_exporter.service
+  do
+    sleep 1
+  done
+
+  # allow exporter through firewall
+  ufw allow 9586
+  ufw allow 9100
+fi
 
 ufw allow ssh
 ufw allow ${wg_server_port}/udp
-ufw allow 9586
-ufw allow 9100
 ufw --force enable

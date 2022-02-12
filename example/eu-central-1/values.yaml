@@ -12,6 +12,7 @@ route53_record_name: vpn.example.com
 route53_geo:
   policy:
   - continent: EU
+use_prometheus: true
 prometheus_server_ip: 0.0.0.0/0
 wg_server_net: 10.8.0.1/24
 wg_server_private_key: YOUR_SERVER_PRIVATE_KEY_HERE

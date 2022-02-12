@@ -58,7 +58,7 @@ variable "wg_persistent_keepalive" {
 variable "use_eip" {
   type        = bool
   default     = false
-  description = "Whether to enable Elastic IP switching code in user-data on wg server startup. If true, eip_id must also be set to the ID of the Elastic IP."
+  description = "Create and use an Elastic IP in user-data on wg server startup."
 }
 
 variable "use_ssm" {
@@ -94,10 +94,16 @@ variable "wg_server_interface" {
   description = "The default interface to forward network traffic to."
 }
 
+variable "use_prometheus" {
+  type        = bool
+  default     = false
+  description = "Whether to setup and use prometheus node metrics export or not."
+}
+
 variable "prometheus_server_ip" {
   type        = string
-  default     = null
-  description = "Prometheus server IP."
+  default     = "0.0.0.0/0"
+  description = "Prometheus server CIDR block."
 }
 
 variable "use_route53" {
